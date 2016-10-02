@@ -1,0 +1,3 @@
+In order to replicate our experiments you need to download the code.org data set from here:
+https://code.org/files/anonymizeddata.zip
+Then copy the contents of the downloaded folder into dkt/data/.

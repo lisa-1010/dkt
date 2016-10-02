@@ -2,7 +2,8 @@
 venv/
 
 # Data folder
-data/
+data/*
+!data/download_instructions.txt
 
 # PyCharm
 .idea/

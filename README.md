@@ -8,8 +8,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Requirements
 In order to replicate our experiments you need to download the code.org data set from here:
-
 https://code.org/files/anonymizeddata.zip
+Then copy the contents of the downloaded folder into dkt/data/.
 
 For more information about this data set, please refer to the readme.txt inside the data folder and the code.org
 website: https://code.org/research
