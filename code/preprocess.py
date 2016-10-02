@@ -1,4 +1,4 @@
-# data_utils.py
+# preprocess.py
 # @author: Lisa Wang
 # @created: Oct 1 2016
 #
@@ -11,7 +11,11 @@
 #===============================================================================
 # CURRENT STATUS: Working
 #===============================================================================
-# USAGE: python preprocess.py -n <hoc_num>
+# USAGE:
+# from preprocess import *
+# 
+# Commandline:
+# python preprocess.py -n <hoc_num>
 # or to get help: python preprocess.py -h
 #
 
