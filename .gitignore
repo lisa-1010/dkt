@@ -1,6 +1,9 @@
 # Virtual environment
 venv/
 
+# Data folder
+data/
+
 # PyCharm
 .idea/
 
