@@ -13,7 +13,7 @@
 #===============================================================================
 # USAGE:
 # from preprocess import *
-# 
+#
 # Commandline:
 # python preprocess.py -n <hoc_num>
 # or to get help: python preprocess.py -h
@@ -24,10 +24,13 @@ import pickle
 import csv
 from collections import defaultdict
 
+from path_names import *
+from utils import *
 
-def get_student_to_traj_map(hoc_num):
+
+def create_student_to_traj_map(hoc_num):
     student_to_traj_map = defaultdict()
-    traj_dir_path = '../data/hoc{}/trajectories/'.format(hoc_num)
+    traj_dir_path = trajectories_dir_path(hoc_num)
     if os.path.exists(traj_dir_path):
         with open(os.path.join(traj_dir_path, 'idMap.txt')) as f:
             reader = csv.reader(f)
@@ -38,9 +41,9 @@ def get_student_to_traj_map(hoc_num):
     return student_to_traj_map
 
 
-def get_traj_to_asts_map(hoc_num):
+def create_traj_to_asts_map(hoc_num):
     traj_to_asts_map = defaultdict(list)
-    traj_dir_path = '../data/hoc{}/trajectories/'.format(hoc_num)
+    traj_dir_path = trajectories_dir_path(hoc_num)
     if os.path.exists(traj_dir_path):
         traj_files = [f for f in os.listdir(traj_dir_path) if (os.path.isfile(os.path.join(traj_dir_path, f)) and f not in ['counts.txt', 'idMap.txt'])]
 
@@ -53,6 +56,21 @@ def get_traj_to_asts_map(hoc_num):
     return traj_to_asts_map
 
 
+def create_traj_to_total_steps_map(hoc_num):
+    """
+    For specified hoc, creates a map from trajectory id to the length of the trajectory.
+    Parameters
+    ----------
+    hoc_num
+
+    """
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    traj_to_total_steps_map = {}
+    for k, v in traj_to_asts_map.iteritems():
+        traj_to_total_steps_map[k] = len(v)
+    return traj_to_total_steps_map
+
+
 def check_if_exists_or_create_file(file_path):
     if not os.path.exists(os.path.dirname(file_path)):
         try:
@@ -63,18 +81,33 @@ def check_if_exists_or_create_file(file_path):
 
 
 def create_maps(hoc_num):
-    student_to_traj_map = get_student_to_traj_map(hoc_num)
-    filename = '../preprocessed_data/hoc{}/student_id_to_trajectory_id_map.pickle'.format(hoc_num)
+    student_to_traj_map = create_student_to_traj_map(hoc_num)
+    filename = student_to_traj_path(hoc_num)
     check_if_exists_or_create_file(filename)
     pickle.dump(student_to_traj_map, open(filename, 'wb'))
 
-    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
-    filename = '../preprocessed_data/hoc{}/trajectory_id_to_asts_map.pickle'.format(hoc_num)
+    traj_to_asts_map = create_traj_to_asts_map(hoc_num)
+    filename = traj_to_asts_path(hoc_num)
     check_if_exists_or_create_file(filename)
     pickle.dump(traj_to_asts_map,
                 open(filename, 'wb'))
 
 
+#
+# def create_labels_num_steps_left_to_completion(hoc_num):
+#     """
+#     For specified HOC Problem, this method creates the labels y.
+#     y is a list, containing lists specifying the number of steps left to completion
+#     for each trajectory.
+#
+#     Parameters
+#     ----------
+#     hoc_num
+#
+#     Returns
+#     -------
+#
+#     """
 def usage():
     print ("python preprocess.py -n <hoc_num>")
 
@@ -98,9 +131,13 @@ def main():
             assert False, "unhandled option"
 
 if __name__ == '__main__':
-    # for hoc_num in [4, 18]:
-    #     create_maps(hoc_num)
-    main()
+    for hoc_num in [4, 18]:
+        traj_to_total_steps_map = create_traj_to_total_steps_map(hoc_num)
+        filename = traj_to_total_steps_path(hoc_num)
+        check_if_exists_or_create_file(filename)
+        pickle.dump(traj_to_total_steps_map,
+                    open(filename, 'wb'))
+    # main()
 
 
 

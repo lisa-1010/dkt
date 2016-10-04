@@ -9,6 +9,9 @@ preprocessed_data/
 # PyCharm
 .idea/
 
+# Tflearn Examples
+tflearn_playground/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
