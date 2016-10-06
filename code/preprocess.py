@@ -71,24 +71,34 @@ def create_traj_to_total_steps_map(hoc_num):
     return traj_to_total_steps_map
 
 
-def check_if_exists_or_create_file(file_path):
-    if not os.path.exists(os.path.dirname(file_path)):
-        try:
-            os.makedirs(os.path.dirname(file_path))
-        except OSError as exc:  # Guard against race condition
-            return False
-    return True
+def create_traj_to_ast_embeddings_map(hoc_num):
+    """
+    For specified hoc, creates a map from from trajectory id to a list of embeddings.
+    Parameters
+    ----------
+    hoc_num
+
+    Returns
+    -------
+
+    """
+    #TODO: Complete when I have data from Chris
+    pass
+
+
+
+
 
 
 def create_maps(hoc_num):
     student_to_traj_map = create_student_to_traj_map(hoc_num)
     filename = student_to_traj_path(hoc_num)
-    check_if_exists_or_create_file(filename)
+    check_if_path_exists_or_create(filename)
     pickle.dump(student_to_traj_map, open(filename, 'wb'))
 
     traj_to_asts_map = create_traj_to_asts_map(hoc_num)
     filename = traj_to_asts_path(hoc_num)
-    check_if_exists_or_create_file(filename)
+    check_if_path_exists_or_create(filename)
     pickle.dump(traj_to_asts_map,
                 open(filename, 'wb'))
 
@@ -132,11 +142,13 @@ def main():
 
 if __name__ == '__main__':
     for hoc_num in [4, 18]:
-        traj_to_total_steps_map = create_traj_to_total_steps_map(hoc_num)
-        filename = traj_to_total_steps_path(hoc_num)
-        check_if_exists_or_create_file(filename)
-        pickle.dump(traj_to_total_steps_map,
-                    open(filename, 'wb'))
+        create_student_to_performance_on_next_problem_map(hoc_num)
+        print ("created map for hoc {}".format(hoc_num))
+        # traj_to_total_steps_map = create_traj_to_total_steps_map(hoc_num)
+        # filename = traj_to_total_steps_path(hoc_num)
+        # check_if_path_exists_or_create_file(filename)
+        # pickle.dump(traj_to_total_steps_map,
+        #             open(filename, 'wb'))
     # main()
 
 

@@ -16,6 +16,8 @@
 def trajectories_dir_path(hoc_num):
     return '../data/hoc{}/trajectories/'.format(hoc_num)
 
+def next_problem_dir_path(hoc_num):
+    return '../data/hoc{}/nextProblem/'.format(hoc_num)
 
 def student_to_traj_path(hoc_num):
     return '../preprocessed_data/hoc{}/student_id_to_trajectory_id_map.pickle'.format(hoc_num)
