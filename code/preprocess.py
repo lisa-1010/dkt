@@ -7,6 +7,8 @@
 #
 # This module creates the student id to trajectory id map and the trajectory id
 # to asts map for a specified hoc number.
+# Functions in preprocess should normally only be called once, e.g. to convert
+# data into a different format. They are not part of the pipeline.
 #
 #===============================================================================
 # CURRENT STATUS: Working
@@ -87,9 +89,6 @@ def create_traj_to_ast_embeddings_map(hoc_num):
 
 
 
-
-
-
 def create_maps(hoc_num):
     student_to_traj_map = create_student_to_traj_map(hoc_num)
     filename = student_to_traj_path(hoc_num)
@@ -142,8 +141,6 @@ def main():
 
 if __name__ == '__main__':
     for hoc_num in [4, 18]:
-        create_student_to_performance_on_next_problem_map(hoc_num)
-        print ("created map for hoc {}".format(hoc_num))
         # traj_to_total_steps_map = create_traj_to_total_steps_map(hoc_num)
         # filename = traj_to_total_steps_path(hoc_num)
         # check_if_path_exists_or_create_file(filename)
