@@ -21,6 +21,7 @@ def baseline_pathscore(hoc_num, minlen=3, test_size=0.1):
     Number of samples in dataset: {}\n\
     Test size: {}\n\
     Train acc: {}\t Test acc: {}\n\n".format(minlen, x.shape[0], test_size, train_acc, test_acc))
+    return train_acc, test_acc
 
 
 
