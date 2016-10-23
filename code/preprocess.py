@@ -30,6 +30,20 @@ from path_names import *
 from utils import *
 
 
+def create_ast_id_to_program_embedding_map(hoc_num):
+    # Use a map since ast ids are not necessarily consecutive. There are gaps. (e.g. hoc 18 doesn't have ast 15)
+    program_embeddings_map = defaultdict()
+    with open('../data/encoded_{}.csv'.format(hoc_num)) as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            assert(len(row) == 51), "row has unexpected length"
+            ast_id = int(row[0])
+            embedding = np.array([float(v) for v in row[1:]])
+            program_embeddings_map[ast_id] = embedding
+    return program_embeddings_map
+
+
+
 def create_student_to_traj_map(hoc_num):
     student_to_traj_map = defaultdict()
     traj_dir_path = trajectories_dir_path(hoc_num)
@@ -72,6 +86,42 @@ def create_traj_to_total_steps_map(hoc_num):
         traj_to_total_steps_map[k] = len(v)
     return traj_to_total_steps_map
 
+
+def create_trajectory_scores_map(hoc_num):
+
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    # student_to_traj_map = get_student_to_traj_map(hoc_num)
+    # # get trajectory counts
+    # traj_to_count_map = get_traj_counts(hoc_num)
+    #
+    # # create map from ast id to poisson rate parameter
+    # ast_id_to_poisson_rate = Counter()
+    #
+    # for traj_id, asts in traj_to_asts_map.iteritems():
+    # #         print ("Traj ID: {}, length: {}".format(traj_id, len(asts)))
+    #     if len(asts) > 0 and asts[-1] == 0: # if last AST in traj was correct solution and cur ast is actually in trajectory
+    #         for ast in asts:
+    #             ast_id_to_poisson_rate[ast] += traj_to_count_map[traj_id] # scale count by # students who took this traj
+    #
+    # filename = ast_to_poisson_rate_path(hoc_num)
+    # check_if_path_exists_or_create(filename)
+    # pickle.dump(ast_id_to_poisson_rate, open(filename, 'wb'))
+
+    ast_id_to_poisson_rate = get_ast_counts(hoc_num)
+
+    # maps a trajectory to a pathscore as defined in Piech et al.
+    # "Autonomously Generating Hints by Inferring Problem Solving Policies"
+    traj_to_score = {}
+    for traj_id, asts in traj_to_asts_map.iteritems():
+        score = 0
+        for ast in asts:
+            score += 1 / (float(ast_id_to_poisson_rate[ast] + 1))
+        traj_to_score[traj_id] = score
+
+    filename = traj_to_score_path(hoc_num)
+    check_if_path_exists_or_create(filename)
+    pickle.dump(traj_to_score, open(filename, 'wb'))
+    return traj_to_score
 
 def create_traj_to_ast_embeddings_map(hoc_num):
     """
@@ -140,12 +190,12 @@ def main():
             assert False, "unhandled option"
 
 if __name__ == '__main__':
-    for hoc_num in [4, 18]:
-        # traj_to_total_steps_map = create_traj_to_total_steps_map(hoc_num)
-        # filename = traj_to_total_steps_path(hoc_num)
-        # check_if_path_exists_or_create_file(filename)
-        # pickle.dump(traj_to_total_steps_map,
-        #             open(filename, 'wb'))
+    for hoc_num in [18]:
+        ast_id_to_program_embedding_map = create_ast_id_to_program_embedding_map(hoc_num)
+        filename = ast_id_to_program_embedding_path(hoc_num)
+        check_if_path_exists_or_create(filename)
+        pickle.dump(ast_id_to_program_embedding_map,
+                    open(filename, 'wb'))
     # main()
 
 

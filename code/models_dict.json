@@ -1,0 +1,10 @@
+{
+    "dummy": {}, 
+    "predict_next_prob_binary": {
+        "architecture": "lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 128, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }
+}
