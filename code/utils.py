@@ -165,7 +165,7 @@ def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is
     x = np.array(x)
     y = np.array(to_categorical(y, nb_classes=2))
     mask = np.array(mask)
-    mask = np.reshape(mask, (mask.shape[0], mask.shape[1], 1))
+    # mask = np.reshape(mask, (mask.shape[0], mask.shape[1], 1))
 
     if y_is_seq:
         y_seq = np.repeat(y, maxlen, axis=0)
@@ -185,7 +185,7 @@ def load_data_will_student_solve_next_problem_baseline(hoc_num, minlen=3, maxlen
     x: list of embedding sequences. Each entry in the list is one sample corresponding to a student.
     y: list of binary truth values, indicating whether student solved next problem perfectly.
     """
-    print ("Loading data...")
+    # print ("Loading data...")
     traj_to_asts_map = get_traj_to_asts_map(hoc_num)
     traj_to_score_map = get_traj_to_score_map(hoc_num)
     student_to_traj_map = get_student_to_traj_map(hoc_num)
@@ -209,7 +209,7 @@ def load_data_will_student_solve_next_problem_baseline(hoc_num, minlen=3, maxlen
 
     x, y  = np.array(x), np.array(y)
     x = x.reshape(-1,1) # since sklearn doesn't accept 1-d input.
-    print ("Data loaded.")
+    # print ("Data loaded.")
     return x, y
 
 

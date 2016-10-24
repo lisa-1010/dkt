@@ -1,6 +1,7 @@
 # Tensorflow
 checkpoints/
 tensorboard_logs/
+best_checkpoints/
 
 # Virtual environment
 venv/

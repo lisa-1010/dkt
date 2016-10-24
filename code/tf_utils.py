@@ -138,11 +138,43 @@ def build_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2):
     net = tflearn.input_data([None, n_timesteps, n_inputdim])
     net = tflearn.lstm(net, n_hidden, return_seq=False, dynamic=True)
     net = tflearn.dropout(net, 0.5)
-    net = tflearn.fully_connected(net, 2, activation='softmax')
+    net = tflearn.fully_connected(net, n_classes, activation='softmax')
     net = tflearn.regression(net, optimizer='adam', learning_rate=0.001,
                          loss='categorical_crossentropy')
     return net
 
+
+# def build_two_layer_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2):
+#     """
+#     lstm with prediction only at last timestep.
+#     Input: A time series of embeddings. Each embedding models an AST, the time series contains the embeddings
+#     of the ASTs in a trajectory.
+#     Output: A time series of real-valued numbers, predicting the number of steps left to completion of the problem.
+#     """
+#     net = tflearn.input_data([None, n_timesteps, n_inputdim])
+#     net = tflearn.lstm(net, n_hidden, return_seq=True, dynamic=True)
+#     net = tflearn.lstm(net, n_hidden, return_seq=False)
+#     net = tflearn.fully_connected(net, n_classes, activation='softmax')
+#     net = tflearn.regression(net, optimizer='adam', learning_rate=0.001,
+#                          loss='categorical_crossentropy')
+#     return net
+
+
+def build_two_layer_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2):
+    """
+    lstm with prediction only at last timestep.
+    Input: A time series of embeddings. Each embedding models an AST, the time series contains the embeddings
+    of the ASTs in a trajectory.
+    Output: A time series of real-valued numbers, predicting the number of steps left to completion of the problem.
+    """
+    net = tflearn.input_data([None, n_timesteps, n_inputdim], name='input')
+    net = tflearn.lstm(net, n_hidden, return_seq=True, dynamic=True, name='lstm_1')
+    net = tflearn.dropout(net, 0.5)
+    net = tflearn.lstm(net, n_hidden/2, return_seq=False, name='lstm_2')
+    net = tflearn.fully_connected(net, n_classes, activation='softmax', name='fc')
+    net = tflearn.regression(net, optimizer='adam', learning_rate=0.001,
+                         loss='categorical_crossentropy')
+    return net
 
 # def load_model(model_id, load_checkpoint=False, is_training=False):
 #     # should be used for all models

@@ -6,5 +6,47 @@
         "n_hidden": 128, 
         "n_inputdim": 50, 
         "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 128, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_minlen_1": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_minlen_2": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_minlen_3": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_minlen_4": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_minlen_5": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
     }
 }
