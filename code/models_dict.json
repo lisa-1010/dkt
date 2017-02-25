@@ -48,5 +48,75 @@
         "n_hidden": 64, 
         "n_inputdim": 50, 
         "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_1": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 1
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_10": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 10
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_2": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 2
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_3": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 3
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_4": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 4
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_5": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 5
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_6": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 6
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_7": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 7
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_8": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 8
+    }, 
+    "predict_next_prob_binary_two_layer_traj_len_9": {
+        "architecture": "two_layer_lstm_predict_binary", 
+        "n_classes": 2, 
+        "n_hidden": 64, 
+        "n_inputdim": 50, 
+        "n_timesteps": 9
     }
 }

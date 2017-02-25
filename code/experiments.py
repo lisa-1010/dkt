@@ -12,7 +12,7 @@ from models_dict import *
 
 
 
-def load_model(model_id, load_checkpoint=False, is_training=False):
+def load_model(model_id, load_checkpoint=False, is_training=False, get_hidden_rep=False, timesteps=None):
     # should be used for all models
     print ('Loading model...')
 
@@ -21,6 +21,9 @@ def load_model(model_id, load_checkpoint=False, is_training=False):
                                                                   model_dict["n_hidden"], model_dict["n_classes"], \
                                                                  model_dict["architecture"]
 
+    if timesteps:
+        # if provided as an argument, overwrite n_timesteps from the model
+        n_timesteps = timesteps
 
     if architecture == 'lstm_predict_binary_sequence':
         net = build_lstm_net_predict_sequence(n_timesteps=n_timesteps, n_inputdim=n_inputdim, n_hidden=n_hidden, n_classes=n_classes, mask=None)
@@ -30,7 +33,7 @@ def load_model(model_id, load_checkpoint=False, is_training=False):
 
     elif architecture == 'two_layer_lstm_predict_binary':
         net = build_two_layer_lstm_net(n_timesteps=n_timesteps, n_inputdim=n_inputdim, n_hidden=n_hidden,
-                                       n_classes=n_classes)
+                                       n_classes=n_classes, get_hidden_rep=get_hidden_rep)
 
     tensorboard_dir = '../tensorboard_logs/' + model_id + '/'
     checkpoint_path = '../checkpoints/' + model_id + '/'
@@ -63,25 +66,6 @@ def load_model(model_id, load_checkpoint=False, is_training=False):
     return model
 
 
-def train_model(model_id, use_checkpoint=True):
-
-    maxlen = 10 # max sequence length
-    x, y = load_data_will_student_solve_next_problem(hoc_num=18, minlen=2, maxlen=maxlen)
-    print ("Embedding shape: {}".format(x[0][0].shape))
-
-    y = to_categorical(y, nb_classes=2)
-
-    print ("Seq lengths of first 5 samples (should be 10): {}".format([len(x[i]) for i in xrange(5)]))
-
-    model = load_model(model_id, load_checkpoint=use_checkpoint, is_training=True)
-
-    date_time_string = datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-    run_id = "{}_{}".format(model_id, date_time_string)
-
-    model.fit(x, y, n_epoch=32, validation_set=0.1, show_metric=True, snapshot_step=100, run_id=run_id)
-
-
-
 def get_results_saved_model(model_id, minlen):
     graph_to_use = tf.Graph()
     with graph_to_use.as_default():
@@ -96,5 +80,17 @@ def get_results_saved_model(model_id, minlen):
         return train_acc, test_acc
 
 
-if __name__ == "__main__":
-    train_model('lstm_predict_binary', use_checkpoint=False)
+def get_results_saved_model_traj_len(hoc_num, model_id, traj_len):
+    graph_to_use = tf.Graph()
+    with graph_to_use.as_default():
+        saved_model = load_model(model_id, load_checkpoint=True, is_training=False, timesteps=traj_len)
+        x, y, student_ids = load_data_will_student_solve_next_problem_traj_len(hoc_num, only_traj_len=traj_len, y_is_seq=False)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=42)
+        pred_train =np.argmax(saved_model.predict(x_train), axis=1)
+        pred_test = np.argmax(saved_model.predict(x_test), axis=1)
+        train_acc = accuracy_score(pred_train, np.argmax(y_train, axis=1))
+        test_acc = accuracy_score(pred_test,  np.argmax(y_test, axis=1))
+        print ("Train acc: {}\t Test acc: {}".format(train_acc, test_acc))
+        return train_acc, test_acc, student_ids
+
+

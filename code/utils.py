@@ -15,7 +15,8 @@
 from collections import defaultdict
 import os, sys, getopt
 import pickle
-import csv
+import csv, json
+from pprint import pprint
 from collections import defaultdict
 import numpy as np
 from tflearn.data_utils import to_categorical, pad_sequences
@@ -42,40 +43,8 @@ def missing_ast_id_embedding(dim, random_seed=47):
     np.random.seed(random_seed)
     return np.random.rand(dim)
 
-
-# def load_program_embeddings(hoc_num, max_timesteps=10):
-#     # if traj_ids are provided, only compute embeddings for specified trajectories.
-#     #  Otherwise, compute embeddings for all trajectories.
-#     # x will be a list of lists.
-#     # Each row in x is a list of embedding vectors. The length of each list can vary.
-#     ast_id_to_program_embedding_map = get_ast_id_to_program_embedding_map(hoc_num)
-#
-#     traj_to_asts_map = get_traj_to_asts_map(hoc_num)
-#     traj_ids = sorted(traj_to_asts_map.keys())
-#
-#     embedding_dim = len(ast_id_to_program_embedding_map.values()[0])
-#     traj_id_to_embeddings_map = {}
-#
-#     for traj_id in traj_ids:
-#         ast_ids = traj_to_asts_map[traj_id] # list of ast ids in the trajectory
-#         traj_len = len(ast_ids)
-#
-#         embeddings = []
-#         for t in xrange(min(traj_len, max_timesteps)):
-#             ast_id = ast_ids[t]
-#             if ast_id in ast_id_to_program_embedding_map:
-#                 embeddings.append(ast_id_to_program_embedding_map[ast_id])
-#             else:
-#                 embeddings.append(missing_ast_id_embedding(dim=embedding_dim))
-#         traj_id_to_embeddings_map[traj_id] = embeddings
-#     return traj_id_to_embeddings_map
-
-
 def load_program_embeddings(hoc_num, max_timesteps=10):
-    # if traj_ids are provided, only compute embeddings for specified trajectories.
-    #  Otherwise, compute embeddings for all trajectories.
-    # x will be a list of lists.
-    # Each row in x is a list of embedding vectors. The length of each list can vary.
+
     ast_id_to_program_embedding_map = get_ast_id_to_program_embedding_map(hoc_num)
 
     traj_to_asts_map = get_traj_to_asts_map(hoc_num)
@@ -125,7 +94,7 @@ def get_all_student_ids(hoc_num):
 
 
 
-def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is_seq=False, with_mask=False):
+def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is_seq=False, with_mask=False, return_student_ids=False):
     """
     Returns:
     x: list of embedding sequences. Each entry in the list is one sample corresponding to a student.
@@ -139,9 +108,8 @@ def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is
 
     students_who_solved_next_problem = set(get_students_who_solved_next_problem(hoc_num))
 
-    x, y, mask = [], [], []
+    x, y, mask, student_ids = [], [], [], []
 
-    # i = 0
     for student_id in all_student_ids:
         traj_id = int(student_to_traj_map[student_id])
         traj_len = len(traj_to_asts_map[traj_id])
@@ -154,17 +122,17 @@ def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is
                 y.append(0)
             if with_mask:
                 # mask should traj_len 1's and rest to maxlen
-                # e.g. if trak_len is 3, then cur_mask should be [1,1,1,0,0,0,0,0,0,0]
+                # e.g. if traj_len is 3, then cur_mask should be [1,1,1,0,0,0,0,0,0,0]
                 cur_mask = np.lib.pad(np.ones(min(traj_len, maxlen)), (0, max(0, maxlen - traj_len)), 'constant',
                                       constant_values=(0))
                 mask.append(cur_mask)
-        # i += 1
-        # if i%100 == 0:
-        #     print ("processed {} students.".format(i))
+            if return_student_ids:
+                student_ids.append(student_id)
 
     x = np.array(x)
     y = np.array(to_categorical(y, nb_classes=2))
     mask = np.array(mask)
+    student_ids = np.array(student_ids)
     # mask = np.reshape(mask, (mask.shape[0], mask.shape[1], 1))
 
     if y_is_seq:
@@ -174,9 +142,55 @@ def load_data_will_student_solve_next_problem(hoc_num, minlen=3, maxlen=10, y_is
     print ("Data loaded.")
 
     if with_mask:
-        return x, y, mask
+        if return_student_ids:
+            return x, y, mask, student_ids
+        else:
+            return x, y, mask
 
+    if return_student_ids:
+        return x, y, student_ids
     return x, y
+
+
+def load_data_will_student_solve_next_problem_traj_len(hoc_num, only_traj_len=5, y_is_seq=False):
+    """
+    Returns:
+    x: list of embedding sequences. Each entry in the list is one sample corresponding to a student.
+    y: list of binary truth values, indicating whether student solved next problem perfectly.
+    student_ids: corresponding student_ids for x and y. x[i] and y[i] correspond to student with student_ids[i]
+    """
+    print ("Loading data...")
+    traj_id_to_embeddings_map = load_program_embeddings(hoc_num, max_timesteps=only_traj_len)
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    student_to_traj_map = get_student_to_traj_map(hoc_num)
+    all_student_ids = sorted(student_to_traj_map.keys())
+
+    students_who_solved_next_problem = set(get_students_who_solved_next_problem(hoc_num))
+
+    x, y, student_ids = [], [], []
+
+    for student_id in all_student_ids:
+        traj_id = int(student_to_traj_map[student_id])
+        traj_len = len(traj_to_asts_map[traj_id])
+
+        if traj_len == only_traj_len:
+            x.append(traj_id_to_embeddings_map[traj_id])
+            if student_id in students_who_solved_next_problem:
+                y.append(1)
+            else:
+                y.append(0)
+            student_ids.append(student_id)
+
+    x = np.array(x)
+    y = np.array(to_categorical(y, nb_classes=2))
+    student_ids = np.array(student_ids)
+
+    if y_is_seq:
+        y_seq = np.repeat(y, only_traj_len, axis=0)
+        y = y_seq.reshape(y.shape[0], only_traj_len, y.shape[1])
+
+    print ("Data loaded.")
+    return x, y, student_ids
 
 
 def load_data_will_student_solve_next_problem_baseline(hoc_num, minlen=3, maxlen=10):
@@ -213,6 +227,82 @@ def load_data_will_student_solve_next_problem_baseline(hoc_num, minlen=3, maxlen
     return x, y
 
 
+def load_data_will_student_solve_next_problem_baseline_pathscore_success_on_cur_problem(hoc_num, minlen=3, maxlen=10):
+    """
+    Returns:
+    x: np.array  is one sample corresponding to a student.
+    y: list of binary truth values, indicating whether student solved next problem perfectly.
+    """
+    # print ("Loading data...")
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    traj_to_score_map = get_traj_to_score_map(hoc_num)
+    student_to_traj_map = get_student_to_traj_map(hoc_num)
+
+    all_student_ids = sorted(student_to_traj_map.keys())
+
+    students_who_solved_next_problem = set(get_students_who_solved_next_problem(hoc_num))
+
+    x, y = [], []
+
+    for student_id in all_student_ids:
+        traj_id = int(student_to_traj_map[student_id])
+        traj_len = len(traj_to_asts_map[traj_id])
+
+        if traj_len >= minlen:
+            score = traj_to_score_map[traj_id]
+            if traj_to_asts_map[traj_id][-1] == 0:  # if student's trajectory ends in correct solution
+                success_on_cur_problem = 1
+            else:
+                success_on_cur_problem = 0
+            x.append(np.array([score,success_on_cur_problem]))
+            if student_id in students_who_solved_next_problem:
+                y.append(1)
+            else:
+                y.append(0)
+
+    x, y  = np.array(x), np.array(y)
+    # print ("Data loaded.")
+    return x, y
+
+
+def load_data_will_student_solve_next_problem_baseline_pathscore_success_on_cur_problem_traj_len(hoc_num, only_traj_len=5):
+    """
+    Only includes students whose trajectory has a certain length, as specified by only_traj_len parameter.
+    Returns:
+    x: np.array of shape (n_students, 2) is one sample corresponding to a student. Two features, one is the pathscore,
+    the other is indicator whether student solved current problem  perfectly.
+    y: np.array of shape (n_students,) of binary truth values, indicating whether student solved next problem perfectly.
+    """
+    # print ("Loading data...")
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    traj_to_score_map = get_traj_to_score_map(hoc_num)
+    student_to_traj_map = get_student_to_traj_map(hoc_num)
+
+    all_student_ids = sorted(student_to_traj_map.keys())
+
+    students_who_solved_next_problem = set(get_students_who_solved_next_problem(hoc_num))
+
+    x, y = [], []
+
+    for student_id in all_student_ids:
+        traj_id = int(student_to_traj_map[student_id])
+        traj_len = len(traj_to_asts_map[traj_id])
+
+        if traj_len == only_traj_len:
+            score = traj_to_score_map[traj_id]
+            if traj_to_asts_map[traj_id][-1] == 0:  # if student's trajectory ends in correct solution
+                success_on_cur_problem = 1
+            else:
+                success_on_cur_problem = 0
+            x.append(np.array([score,success_on_cur_problem]))
+            if student_id in students_who_solved_next_problem:
+                y.append(1)
+            else:
+                y.append(0)
+
+    x, y  = np.array(x), np.array(y)
+    # print ("Data loaded.")
+    return x, y
 
 
 
@@ -252,10 +342,36 @@ def load_data_will_student_solve_current_problem(hoc_num, minlen=3, maxlen=10, y
     return x, y
 
 
+def print_all_asts_in_traj(hoc_num, traj_id, filename=None):
+    traj_to_asts_map = get_traj_to_asts_map(hoc_num)
+    asts = traj_to_asts_map[traj_id]
+    traj_json = []
+    if filename:
+        f = open(filename, 'wb+')
+    for ast_id in asts:
+        ast_content = read_ast(hoc_num, ast_id)
+        print ast_id
+        traj_json.append({ast_id: ast_content})
+        pprint(ast_content)
+
+    if filename:
+        f.write(json.dumps({traj_id: traj_json}))
+        f.close()
 
 
-def load_toy_data_number_sequences(num_samples=2000, minlen=3, maxlen=10):
-    x, y = [], []
+
+def read_ast(hoc_num, ast_id):
+    ast_file_path = ('../data/hoc{}/asts/{}.json'.format(hoc_num, ast_id))
+    print ast_file_path
+
+    if os.path.isfile(ast_file_path):
+        with open(ast_file_path, 'rb+') as f:
+            ast_content = json.load(f)
+        return ast_content
+    else:
+        return "AST {} was not found. ".format(ast_id)
+
+
 
 # ===============================================================================
 # Helper functions to load maps
@@ -384,8 +500,11 @@ if __name__ == "__main__":
     # print ("true y: {}".format(y[0]))
 
 
+    print_all_asts_in_traj(18, 3)
 
-    x, y = load_data_will_student_solve_current_problem(18, minlen=3)
-    print x.shape
-    print x[0]
+
+    # x, y = load_data_will_student_solve_current_problem(18, minlen=3)
+    # print x.shape
+    # print x[0]
+
 

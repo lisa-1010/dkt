@@ -146,7 +146,7 @@ def build_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2):
 
 
 
-def build_two_layer_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2):
+def build_two_layer_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_classes=2, get_hidden_rep=False):
     """
     lstm with prediction only at last timestep.
     Input: A time series of embeddings. Each embedding models an AST, the time series contains the embeddings
@@ -157,10 +157,14 @@ def build_two_layer_lstm_net(n_timesteps=10, n_inputdim=50, n_hidden=128,  n_cla
     net = tflearn.lstm(net, n_hidden, return_seq=True, dynamic=True, name='lstm_1')
     net = tflearn.dropout(net, 0.5)
     net = tflearn.lstm(net, n_hidden/2, return_seq=False, name='lstm_2')
+    if get_hidden_rep:
+        return net
     net = tflearn.fully_connected(net, n_classes, activation='softmax', name='fc')
     net = tflearn.regression(net, optimizer='adam', learning_rate=0.001,
                          loss='categorical_crossentropy')
     return net
+
+
 
 
 if __name__ == '__main__':
